@@ -1,0 +1,23 @@
+probes:
+  - id: 'service-api-prod'
+    name: Service Production Probe
+    description: Probe to check Service Production Healty
+    interval: 10
+    requests:
+      - method: GET
+        url: https://localhost:44353/health-check
+        timeout: 7000
+        alerts:
+          - query: response.status != 200
+            message: Service Production Status not 2xx, but {{ response.status }} / {{ response.statusText }}
+  - id: 'db-api-prod'
+    name: Db Production Probe
+    description: Probe to check Db Production Healty
+    interval: 10
+    requests:
+      - method: GET
+        url: https://localhost:44353/health-check/db
+        timeout: 7000
+        alerts:
+          - query: response.status != 200
+            message: Product Service Production Status not 2xx, but {{ response.status }} / {{ response.statusText }}
