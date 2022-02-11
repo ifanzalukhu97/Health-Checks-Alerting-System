@@ -1,5 +1,7 @@
+using System;
 using health_checks_and_alerting.Data;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -51,6 +53,11 @@ namespace health_checks_and_alerting
 
                 endpoints.MapHealthChecks("/health-check");
                 
+                endpoints.MapHealthChecks("/health-check/db", new HealthCheckOptions
+                {
+                    Predicate = check => check.Tags.Contains("db")
+                });
+                
                 endpoints.MapControllers();
             });
         }
@@ -66,7 +73,12 @@ namespace health_checks_and_alerting
 
         private void ConfigureHealthChecks(IServiceCollection service)
         {
-            service.AddHealthChecks();
+            service
+                .AddHealthChecks()
+                .AddSqlServer(
+                    Configuration.GetConnectionString("DefaultConnection"),
+                    tags: new[] { "db", "sql-server" },
+                    timeout: TimeSpan.FromSeconds(5));
         }
     }
 }
