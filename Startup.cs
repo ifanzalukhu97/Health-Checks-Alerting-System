@@ -1,6 +1,8 @@
+using health_checks_and_alerting.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,6 +21,8 @@ namespace health_checks_and_alerting
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            SetDatabaseContext(services);
+            
             services.AddControllers();
         }
 
@@ -46,6 +50,15 @@ namespace health_checks_and_alerting
                 
                 endpoints.MapControllers();
             });
+        }
+
+        protected virtual void SetDatabaseContext(IServiceCollection services)
+        {
+            services
+                .AddEntityFrameworkSqlServer()
+                .AddDbContext<ApplicationDbContext>(options =>
+                    options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
         }
     }
 }
