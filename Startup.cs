@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net.Mime;
 using System.Text.Json;
 using health_checks_and_alerting.Data;
+using health_checks_and_alerting.Settings;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
@@ -19,9 +20,15 @@ namespace health_checks_and_alerting
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            RedisSetting = Configuration.GetSection("Redis").Get<RedisSetting>();
+            RabbitMqSetting = Configuration.GetSection("RabbitMq").Get<RabbitMqSetting>();
+
         }
 
         public IConfiguration Configuration { get; }
+        private RabbitMqSetting RabbitMqSetting { get; }
+        private RedisSetting RedisSetting { get; }
+
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -101,7 +108,16 @@ namespace health_checks_and_alerting
                 .AddSqlServer(
                     Configuration.GetConnectionString("DefaultConnection"),
                     tags: new[] { "db", "sql-server" },
+                    timeout: TimeSpan.FromSeconds(5))
+                .AddRedis(
+                    RedisSetting.ConnectionString,
+                    tags: new[] { "db", "redis" },
+                    timeout: TimeSpan.FromSeconds(5))
+                .AddRabbitMQ(
+                    rabbitConnectionString: RabbitMqSetting.ConnectionString,
+                    tags: new[] { "db", "rabbit-mq" },
                     timeout: TimeSpan.FromSeconds(5));
+
         }
     }
 }
