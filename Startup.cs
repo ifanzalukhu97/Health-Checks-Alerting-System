@@ -22,6 +22,8 @@ namespace health_checks_and_alerting
         public void ConfigureServices(IServiceCollection services)
         {
             SetDatabaseContext(services);
+
+            ConfigureHealthChecks(services);
             
             services.AddControllers();
         }
@@ -47,6 +49,7 @@ namespace health_checks_and_alerting
                     await context.Response.WriteAsync("Hello World!");
                 });
 
+                endpoints.MapHealthChecks("/health-check");
                 
                 endpoints.MapControllers();
             });
@@ -59,6 +62,11 @@ namespace health_checks_and_alerting
                 .AddDbContext<ApplicationDbContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
+        }
+
+        private void ConfigureHealthChecks(IServiceCollection service)
+        {
+            service.AddHealthChecks();
         }
     }
 }
