@@ -1,4 +1,7 @@
 using System;
+using System.Linq;
+using System.Net.Mime;
+using System.Text.Json;
 using health_checks_and_alerting.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -55,8 +58,28 @@ namespace health_checks_and_alerting
                 
                 endpoints.MapHealthChecks("/health-check/db", new HealthCheckOptions
                 {
-                    Predicate = check => check.Tags.Contains("db")
-                });
+                    Predicate = check => check.Tags.Contains("db"),
+                    
+                    // Custom response message using middleware / interceptor
+                    ResponseWriter = async (context, report) =>
+                    {
+                        var result = JsonSerializer.Serialize(
+                            new 
+                            { 
+                                status = report.Status.ToString(), 
+                                checks = report.Entries.Select(entry => new 
+                                {
+                                    name = entry.Key,
+                                    status = entry.Value.Status.ToString(),
+                                    exception = entry.Value.Exception != null ? entry.Value.Exception.Message : "none",
+                                    duration = entry.Value.Duration.ToString() 
+                                }) 
+                            });
+                        
+                        context.Response.ContentType = MediaTypeNames.Application.Json; 
+                        await context.Response.WriteAsync(result); 
+                    }
+                }); 
                 
                 endpoints.MapControllers();
             });
