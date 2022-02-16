@@ -21,3 +21,8 @@ probes:
         alerts:
           - query: response.status != 200
             message: Product Service Production Status not 2xx, but {{ response.status }} / {{ response.statusText }}
+notifications:
+  - id : "YOUR-SLACK-CHANNEL-ID"
+    type: slack
+    data:
+      url: "YOUR-SLACK-WEBHOOK-URL"
