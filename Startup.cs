@@ -61,7 +61,10 @@ namespace health_checks_and_alerting
                     await context.Response.WriteAsync("Hello World!");
                 });
 
-                endpoints.MapHealthChecks("/health-check");
+                endpoints.MapHealthChecks("/health-check", new HealthCheckOptions
+                {
+                    Predicate = _ => false
+                });
                 
                 endpoints.MapHealthChecks("/health-check/db", new HealthCheckOptions
                 {
